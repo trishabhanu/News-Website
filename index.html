@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News App</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="pink logo crop.jpg">
+</head>
+<body>
+    <nav>
+        <div class="main-nav container flex">
+            <a href="" class="company-logo">
+                <img src="live news.png" alt="logo" height="70px" >
+            </a>
+            <div class="nav-links">
+                <ul class="flex">
+                    <li class="hover-link nav-item" id="cricket" onClick="onNavItemClick('cricket')">Cricket</li>
+                    <li class="hover-link nav-item" id="india" onClick="onNavItemClick('india')">India</li>
+                    <li class="hover-link nav-item" id="technology" onClick="onNavItemClick('technology')">Technology
+                    </li>
+                    <li class="hover-link nav-item" id="politics" onClick="onNavItemClick('politics')">Politics</li>
+
+                </ul>
+            </div>
+            <div class="search-bar flex">
+                <input type="text" class="news-input" id="search-text" placeholder="e.g. Science">
+                <button class="search-button" id="search-button">Search</button>
+            </div>
+        </div>
+    </nav>
+
+
+    <main>
+        <div class="cards-container container flex" id="cardscontainer">
+        </div>
+    </main>
+   <template id="template-news-card">
+        <div class="card">
+            <div class="card-header">
+                <img src="https://via.placeholder.com/400x200" alt="" id="news-img">
+            </div>
+            <div class="card-content">
+                <h3 id="news-title">This is the Title</h3>
+                <h6 class="news-source" id="news-source">constGenius 02/02/2024</h6>
+                <p class="news-desc" id="news-desc">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Rem
+                    incidunt ratione, dolore beatae quaerat voluptatum autem fugit voluptas minima eligendi facere
+                    tenetur cumque. Dolorem porro, fugiat distinctio a accusamus cum!</p>
+            </div>
+        </div>
+    </template>
+    <script  defer>
+        const API_KEY = "0ea2bdb2e0714ed0a010339f866ae4b0";
+const url = "https://newsapi.org/v2/everything?q=";
+
+window.addEventListener("load", () => fetchNews("India"));
+
+async function fetchNews(query) {
+    try {
+        const res = await fetch(`${url}${query}&apiKey=${API_KEY}`);
+        if (!res.ok) throw new Error(`Error: ${res.status}`);
+        const data = await res.json();
+        bindData(data.articles);
+    } catch (error) {
+        console.error("Failed to fetch news:", error);
+    }
+}
+
+function bindData(articles) {
+    const cardsContainer = document.getElementById("cardscontainer");
+    const newsCardTemplate = document.getElementById("template-news-card");
+
+    cardsContainer.innerHTML = "";
+
+    articles.forEach((article) => {
+        if (!article.urlToImage) return;
+
+        const cardClone = newsCardTemplate.content.cloneNode(true);
+        fillDataInCard(cardClone, article);
+        cardsContainer.appendChild(cardClone);
+    });
+}
+
+function fillDataInCard(cardClone, article) {
+    const newsImg = cardClone.querySelector("#news-img");
+    const newsTitle = cardClone.querySelector("#news-title");
+    const newsSource = cardClone.querySelector("#news-source");
+    const newsDesc = cardClone.querySelector("#news-desc");
+
+    newsImg.src = article.urlToImage;
+    newsTitle.innerHTML = article.title ? `${article.title.slice(0, 60)}...` : "No title available";
+    newsDesc.innerHTML = article.description ? `${article.description.slice(0, 150)}...` : "No description available";
+
+    const date = new Date(article.publishedAt).toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
+
+    newsSource.innerHTML = `${article.source.name} · ${date}`;
+
+    cardClone.firstElementChild.addEventListener("click", () => {
+        window.open(article.url, "_blank");
+    });
+}
+
+let curSelectedNav = null;
+function onNavItemClick(id) {
+    fetchNews(id);
+    const navItem = document.getElementById(id);
+    if (curSelectedNav) curSelectedNav.classList.remove("active");
+    curSelectedNav = navItem;
+    curSelectedNav.classList.add("active");
+}
+
+const searchButton = document.getElementById("search-button");
+const searchText = document.getElementById("search-text");
+
+searchButton.addEventListener("click", () => {
+    const query = searchText.value;
+    if (!query) return;
+    fetchNews(query);
+    if (curSelectedNav) curSelectedNav.classList.remove("active");
+    curSelectedNav = null;
+});
+
+    </script>
+</body>
+
+</html>
